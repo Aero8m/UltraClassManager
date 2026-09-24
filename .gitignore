@@ -6,3 +6,5 @@ data
 *.pyo
 *.swp
 *.swo
+.venv
+venv

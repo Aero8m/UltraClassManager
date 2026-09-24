@@ -18,9 +18,9 @@
 </div>
 {% endif %}
 
-{% if names %}
 <div class="card" style="text-align: center;">
     <h3><i class="fa-solid fa-dice"></i> 随机抽学生</h3>
+    {% if names %}
     <form method="POST" id="pick-form" action="{{ url_for('group.pick_name', group_id=group.id) }}" style="margin-top: 12px;">
         <div class="form-group" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
             <label style="margin-bottom: 0;">抽取数量：</label>
@@ -40,14 +40,12 @@
             <i class="fa-solid fa-copy"></i> 复制链接
         </button>
     </div>
-</div>
-{% endif %}
-
-<div class="card" style="text-align: center;">
-    <a href="{{ url_for('group.view_subjects', group_id=group.id) }}" class="btn btn-primary">
-        <i class="fa-solid fa-chart-simple"></i> 成绩管理
-    </a>
-    <p style="color: #888; font-size: 0.85em; margin-top: 8px;">管理学生的考试成绩和评分记录~</p>
+    {% else %}
+    <button type="button" class="btn btn-primary" disabled style="margin-top: 12px; opacity: 0.5; cursor: not-allowed;">
+        <i class="fa-solid fa-shuffle"></i> 抽！
+    </button>
+    <p style="color: #888; margin-top: 12px;">当前班级还没有学生，请先在下方添加或批量导入。</p>
+    {% endif %}
 </div>
 
 <div class="card">
@@ -128,7 +126,7 @@ const latestResult = document.getElementById('latest-result');
 })();
 {% endif %}
 
-pickForm.addEventListener('submit', function(e) {
+if (pickForm) pickForm.addEventListener('submit', function(e) {
     e.preventDefault();
     if (pickBtn.disabled) return;
     pickBtn.disabled = true;

@@ -51,6 +51,13 @@ def get_metadata():
     return target_db.metadata
 
 
+def include_object(obj, name, type_, reflected, compare_to):
+    # Keep archived grade data when generating future migrations.
+    if type_ == 'table' and name in {'scores', 'subjects'}:
+        return False
+    return True
+
+
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
@@ -93,6 +100,7 @@ def run_migrations_online():
     conf_args = current_app.extensions['migrate'].configure_args
     if conf_args.get("process_revision_directives") is None:
         conf_args["process_revision_directives"] = process_revision_directives
+    conf_args["include_object"] = include_object
 
     connectable = get_engine()
 
