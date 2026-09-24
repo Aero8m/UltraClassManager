@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card">
+    <h2><i class="fa-solid fa-shield-halved"></i> 二次验证</h2>
+    <p style="color: #888; margin-bottom: 16px;">此操作需要验证身份，请输入您的密码~</p>
+    <form method="POST" action="{{ url_for('auth.reauth_verify', next=next) }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="form-group">
+            <label><i class="fa-solid fa-lock"></i> 密码</label>
+            <input type="password" name="password" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary">验证</button>
+    </form>
+    <p style="margin-top: 16px; color: #999; font-size: 0.9em;">验证状态仅在当前浏览器session有效</p>
+</div>
+{% endblock %}

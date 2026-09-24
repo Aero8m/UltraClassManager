@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2><i class="fa-solid fa-layer-group"></i> 我的班级</h2>
+<form method="POST" action="{{ url_for('group.create_group') }}" class="inline-form card" data-reauth="true">
+    <div class="form-group">
+        <input type="text" name="name" placeholder="输入新组名..." required>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> 创建组</button>
+</form>
+
+{% if groups %}
+<ul class="group-list">
+    {% for g in groups %}
+    <li>
+        <a href="{{ url_for('group.view_group', group_id=g.id) }}"><i class="fa-solid fa-list-ul"></i> {{ g.name }}（{{ g.names|length }} 个学生）</a>
+        <form method="POST" action="{{ url_for('group.delete_group', group_id=g.id) }}" onsubmit="return confirm('确定删除吗？')" data-reauth="true">
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash"></i> 删除</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="card" style="text-align: center; color: #999;">
+    <p>还没有班级呢，快创建一个吧</p>
+</div>
+{% endif %}
+{% endblock %}

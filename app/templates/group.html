@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block content %}
+<a href="{{ url_for('group.dashboard') }}" style="color: #1565c0; text-decoration: none;"><i class="fa-solid fa-arrow-left"></i> 返回列表</a>
+<h2 style="margin-top: 12px;"><i class="fa-solid fa-list-ul"></i> {{ group.name }}</h2>
+
+{% if result %}
+<div class="result" id="pick-result">
+    <h3><i class="fa-solid fa-trophy"></i> 抽中啦</h3>
+    {% if result|length == 1 %}
+        <p class="picked">{{ result[0] }}</p>
+    {% else %}
+        <div class="list">
+            {% for r in result %}
+                <span>{{ r }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+{% if names %}
+<div class="card" style="text-align: center;">
+    <h3><i class="fa-solid fa-dice"></i> 随机抽学生</h3>
+    <form method="POST" id="pick-form" action="{{ url_for('group.pick_name', group_id=group.id) }}" style="margin-top: 12px;">
+        <div class="form-group" style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+            <label style="margin-bottom: 0;">抽取数量：</label>
+            <input type="number" name="count" id="pick-count" value="1" min="1" max="{{ names|length }}" style="width: 80px; text-align: center;">
+            <span style="color: #888;">（最多 {{ names|length }}）</span>
+        </div>
+        <button type="submit" class="btn btn-primary" id="pick-btn"><i class="fa-solid fa-shuffle"></i> 抽！</button>
+    </form>
+
+    <div class="pick-slot" id="pick-slot" {% if not result %}style="display:none;"{% endif %}>
+        <div class="slot-name" id="slot-name" style="display:none;">{{ names[0] }}</div>
+        <div id="latest-result"></div>
+    </div>
+
+    <div style="margin-top: 16px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="copyPageLink()">
+            <i class="fa-solid fa-copy"></i> 复制链接
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<div class="card" style="text-align: center;">
+    <a href="{{ url_for('group.view_subjects', group_id=group.id) }}" class="btn btn-primary">
+        <i class="fa-solid fa-chart-simple"></i> 成绩管理
+    </a>
+    <p style="color: #888; font-size: 0.85em; margin-top: 8px;">管理学生的考试成绩和评分记录~</p>
+</div>
+
+<div class="card">
+    <h3><i class="fa-solid fa-file-import"></i> 批量导入</h3>
+    <form method="POST" action="{{ url_for('group.import_names', group_id=group.id) }}" data-reauth="true">
+        <div class="form-group">
+            <textarea name="text" rows="3" placeholder="用逗号或换行分隔学生，如：张三, 李四, 王五"></textarea>
+        </div>
+        <button type="submit" class="btn btn-secondary"><i class="fa-solid fa-upload"></i> 导入</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3><i class="fa-solid fa-plus"></i> 添加一个学生</h3>
+    <form method="POST" action="{{ url_for('group.add_name', group_id=group.id) }}" class="inline-form" data-reauth="true">
+        <div class="form-group">
+            <input type="text" name="name" placeholder="输入学生名..." required>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-plus"></i> 添加</button>
+    </form>
+</div>
+
+<div class="card">
+    <h3><i class="fa-solid fa-tags"></i> 学生列表（{{ names|length }} 个）</h3>
+    {% if names %}
+    <div class="name-tags">
+        {% for n in names %}
+        <span class="name-tag">
+            {{ n }}
+            <form method="POST" action="{{ url_for('group.delete_name', group_id=group.id) }}" onsubmit="return confirm('删除 {{ n }}？')" style="display: inline;" data-reauth="true">
+                <input type="hidden" name="name" value="{{ n }}">
+                <button type="submit" class="delete-btn"><i class="fa-solid fa-xmark"></i></button>
+            </form>
+        </span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #999;">还没有学生</p>
+    {% endif %}
+</div>
+
+<script>
+function copyPageLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('链接已复制到剪贴板~');
+    }).catch(() => {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('链接已复制到剪贴板~');
+    });
+}
+
+const allNames = {{ names|tojson }};
+const pickForm = document.getElementById('pick-form');
+const pickBtn = document.getElementById('pick-btn');
+const pickSlot = document.getElementById('pick-slot');
+const slotName = document.getElementById('slot-name');
+const latestResult = document.getElementById('latest-result');
+
+{% if result %}
+(function() {
+    let html;
+    {% if result|length == 1 %}
+        html = '<div class="result"><h3 style="color:#3949ab;"><i class="fa-solid fa-trophy"></i> 抽中啦</h3><p class="picked" style="color:#1565c0;">{{ result[0] }}</p></div>';
+    {% else %}
+        html = '<div class="result"><h3 style="color:#3949ab;"><i class="fa-solid fa-trophy"></i> 抽中啦</h3><div class="list">';
+        {% for r in result %}
+            html += '<span>{{ r }}</span>';
+        {% endfor %}
+        html += '</div></div>';
+    {% endif %}
+    latestResult.innerHTML = html;
+})();
+{% endif %}
+
+pickForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (pickBtn.disabled) return;
+    pickBtn.disabled = true;
+    pickBtn.style.opacity = '0.5';
+    pickBtn.style.cursor = 'not-allowed';
+    
+    const count = Math.max(1, Math.min(parseInt(document.getElementById('pick-count').value) || 1, allNames.length));
+    const shuffled = [...allNames].sort(() => Math.random() - 0.5);
+    const pickedNames = shuffled.slice(0, count);
+    
+    pickSlot.style.display = '';
+    latestResult.innerHTML = '';
+    slotName.style.display = '';
+    slotName.textContent = allNames[Math.floor(Math.random() * allNames.length)];
+    
+    let tick = 0;
+    const totalTicks = 25;
+    const interval = setInterval(() => {
+        slotName.textContent = allNames[Math.floor(Math.random() * allNames.length)];
+        tick++;
+        if (tick >= totalTicks) {
+            clearInterval(interval);
+            slotName.style.display = 'none';
+            
+            let html;
+            if (pickedNames.length === 1) {
+                html = '<div class="result"><h3 style="color:#3949ab;"><i class="fa-solid fa-trophy"></i> 抽中啦</h3><p class="picked" style="color:#1565c0;font-size:2em;animation:popIn 0.5s ease;">' + pickedNames[0] + '</p></div>';
+            } else {
+                html = '<div class="result"><h3 style="color:#3949ab;"><i class="fa-solid fa-trophy"></i> 抽中啦</h3><div class="list">';
+                pickedNames.forEach((w, i) => {
+                    html += '<span style="animation:popIn 0.4s ease;animation-delay:' + (i*0.1) + 's;">' + w + '</span>';
+                });
+                html += '</div></div>';
+            }
+            latestResult.innerHTML = html;
+            
+            pickBtn.disabled = false;
+            pickBtn.style.opacity = '1';
+            pickBtn.style.cursor = '';
+        }
+    }, 70);
+});
+</script>
+{% endblock %}

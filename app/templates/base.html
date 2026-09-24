@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraClassManager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 50%, #ede7f6 100%);
+            min-height: 100vh;
+        }
+        nav {
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        nav .brand {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1565c0;
+            text-decoration: none;
+        }
+        nav .brand i { margin-right: 6px; }
+        nav .links a {
+            color: #555;
+            text-decoration: none;
+            margin-left: 18px;
+            font-size: 0.95em;
+            transition: color 0.2s;
+        }
+        nav .links a:hover { color: #1565c0; }
+        .container { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        h1 { color: #1565c0; margin-bottom: 8px; }
+        h2 { color: #283593; margin-bottom: 16px; }
+        h3 { color: #3949ab; margin-bottom: 10px; }
+        .flash {
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: #e8eaf6;
+            color: #283593;
+            font-size: 0.95em;
+            border-left: 4px solid #1565c0;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 22px;
+            border-radius: 25px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            text-decoration: none;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .btn-primary { background: #1565c0; color: #fff; }
+        .btn-primary:hover { background: #0d47a1; }
+        .btn-secondary { background: #3949ab; color: #fff; }
+        .btn-secondary:hover { background: #283593; }
+        .btn-danger { background: #e53935; color: #fff; }
+        .btn-danger:hover { background: #c62828; }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #1565c0;
+            color: #1565c0;
+        }
+        .btn-outline:hover { background: #e3f2fd; }
+        .btn-sm { padding: 6px 16px; font-size: 0.85em; }
+        input, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 0.95em;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: vertical;
+        }
+        input:focus, textarea:focus { border-color: #1565c0; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+            font-size: 0.9em;
+        }
+        .group-list { list-style: none; }
+        .group-list li {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: #fff;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: background 0.2s;
+        }
+        .group-list li:hover { background: #e3f2fd; }
+        .group-list a {
+            color: #1565c0;
+            text-decoration: none;
+            font-size: 1.05em;
+        }
+        .name-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .name-tag {
+            background: #e8eaf6;
+            color: #283593;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .name-tag form { display: inline; }
+        .name-tag .delete-btn {
+            background: none;
+            border: none;
+            color: #e53935;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .result {
+            background: linear-gradient(135deg, #e3f2fd, #e8eaf6);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: 16px 0;
+        }
+        .result .picked {
+            font-size: 2em;
+            color: #1565c0;
+        }
+        .result .list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .result .list span {
+            background: #1565c0;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 25px;
+            font-size: 1.1em;
+        }
+        .inline-form { display: flex; gap: 12px; align-items: flex-end; }
+        .inline-form .form-group { flex: 1; margin-bottom: 0; }
+        @media (max-width: 600px) {
+            .inline-form { flex-direction: column; }
+            .container { padding: 16px 12px; }
+        }
+        .pick-slot {
+            background: linear-gradient(135deg, #e3f2fd, #e8eaf6);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin: 16px 0;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .pick-slot .slot-name {
+            font-size: 2.5em;
+            color: #1565c0;
+            transition: all 0.06s;
+            height: 80px;
+            line-height: 80px;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* 页面内容上浮 — 初始隐藏，由 JS 触发动画 */
+        .container {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .container.animate-in {
+            animation: fadeUp 0.5s ease forwards;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Table styles for scores */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e8eaf6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            background: #e8eaf6;
+            color: #283593;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        tbody td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.95em;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        tbody tr:hover td {
+            background: #e3f2fd;
+        }
+        .score-value {
+            font-weight: 600;
+            color: #1565c0;
+        }
+        .subject-tag {
+            background: #e8eaf6;
+            color: #283593;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+        }
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 0.95em;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fff;
+            cursor: pointer;
+        }
+        select:focus {
+            border-color: #1565c0;
+        }
+
+        /* Stat cards row */
+        .stat-cards {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 130px;
+            background: linear-gradient(135deg, #e3f2fd, #e8eaf6);
+            border-radius: 16px;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .stat-card .stat-icon {
+            font-size: 1.4em;
+            color: #1565c0;
+            margin-bottom: 6px;
+        }
+        .stat-card .stat-value {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #1565c0;
+        }
+        .stat-card .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .filter-bar .form-group {
+            margin-bottom: 0;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        /* Sortable table headers */
+        thead th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        thead th.sortable:hover {
+            background: #c5cae9;
+        }
+        thead th.sorted {
+            color: #1565c0;
+        }
+        thead th i {
+            font-size: 0.75em;
+            margin-left: 4px;
+        }
+
+        /* Sort buttons */
+        .sort-btn.active {
+            background: #1565c0;
+            color: #fff !important;
+            border-color: #1565c0;
+        }
+        .sort-btn i { margin-left: 4px; }
+
+        /* Subject card wrapper (card + delete button) */
+        .subject-card-wrapper {
+            position: relative;
+        }
+        .subject-delete-form {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 1;
+        }
+        .subject-delete-form .btn {
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        /* Subject cards grid */
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .subject-card {
+            display: block;
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+            color: inherit;
+        }
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .subject-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #1565c0;
+            margin-bottom: 14px;
+        }
+        .subject-card-header i {
+            font-size: 1.3em;
+        }
+        .subject-card-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .subject-stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .subject-stat-value {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #283593;
+        }
+        .subject-stat-label {
+            font-size: 0.75em;
+            color: #999;
+        }
+        .subject-card-range {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #666;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        /* Chart wrapper */
+        .chart-wrapper {
+            position: relative;
+            height: 320px;
+            max-height: 60vh;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 32px;
+            width: 380px;
+            max-width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+    </style>
+    <noscript><style>.container { opacity: 1; transform: none; }</style></noscript>
+</head>
+<body>
+    <nav>
+        <a href="/" class="brand"><i class="fa-solid fa-graduation-cap"></i> UltraClassManager</a>
+        <div class="links">
+            {% if current_user.is_authenticated %}
+                <span><i class="fa-solid fa-user"></i> {{ current_user.username }}</span>
+                <a href="{{ url_for('group.dashboard') }}"><i class="fa-solid fa-layer-group"></i> 我的班级</a>
+                <a href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket"></i> 登出</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}"><i class="fa-solid fa-right-to-bracket"></i> 登录</a>
+                <a href="{{ url_for('auth.register') }}"><i class="fa-solid fa-user-plus"></i> 注册</a>
+            {% endif %}
+        </div>
+    </nav>
+    <div class="container">
+        {% with messages = get_flashed_messages() %}
+            {% for msg in messages %}
+                <div class="flash">{{ msg }}</div>
+            {% endfor %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+    {% block scripts %}{% endblock %}
+    <footer style="text-align: center; padding: 24px; color: #888; font-size: 0.85em;">
+        <p>Powered By Aero8m</p>
+    </footer>
+
+    <div class="modal-overlay" id="reauth-modal">
+        <div class="modal-box">
+            <h3><i class="fa-solid fa-shield-halved"></i> 二次验证</h3>
+            <p style="color: #888; margin: 12px 0;">此操作需要验证身份，请输入密码</p>
+            <form id="reauth-form">
+                <div class="form-group">
+                    <input type="password" id="reauth-password" placeholder="输入密码..." required>
+                </div>
+                <p class="reauth-error" id="reauth-error" style="color:#e53935;display:none;margin-bottom:8px;"></p>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" class="btn btn-outline btn-sm" id="reauth-cancel">取消</button>
+                    <button type="submit" class="btn btn-primary btn-sm">验证</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        // ── Reauth modal ──────────────────────────────────────────
+        const modal = document.getElementById('reauth-modal');
+        const form = document.getElementById('reauth-form');
+        const passwordInput = document.getElementById('reauth-password');
+        const errorEl = document.getElementById('reauth-error');
+        const cancelBtn = document.getElementById('reauth-cancel');
+        let pendingForm = null;
+
+        // Intercept forms that require reauthentication — use event
+        // delegation so dynamically-created forms are also caught.
+        document.addEventListener('submit', function(e) {
+            var f = e.target;
+            if (f.tagName !== 'FORM') return;
+            if (!f.hasAttribute('data-reauth')) return;
+            if (sessionStorage.getItem('reauth_verified') === '1') return;
+            e.preventDefault();
+            e.stopPropagation();
+            pendingForm = f;
+            modal.style.display = 'flex';
+            passwordInput.value = '';
+            errorEl.style.display = 'none';
+            passwordInput.focus();
+        });
+
+        // Handle the reauth modal submission.
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = passwordInput.value.trim();
+            if (!password) return;
+            fetch('/reauth', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                body: 'password=' + encodeURIComponent(password)
+            }).then(function(r) {
+                if (!r.ok) throw new Error('server error');
+                return r.json();
+            }).then(function(data) {
+                if (data.success) {
+                    sessionStorage.setItem('reauth_verified', '1');
+                    modal.style.display = 'none';
+                    if (pendingForm) {
+                        pendingForm.submit();
+                    }
+                } else {
+                    errorEl.textContent = data.message || '密码不正确~';
+                    errorEl.style.display = '';
+                }
+            }).catch(function() {
+                errorEl.textContent = '验证失败，请检查网络~';
+                errorEl.style.display = '';
+            });
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+            pendingForm = null;
+        });
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                pendingForm = null;
+            }
+        });
+
+        // Page entry animation — triggered by JS so it reliably plays on
+        // every visit (fresh load, bfcache restore, redirect-after-POST,
+        // etc.).  The container starts hidden (opacity:0 + translateY)
+        // and the .animate-in class adds the CSS keyframe animation.
+        var container = document.querySelector('.container');
+        function playEntryAnimation() {
+            if (!container) return;
+            container.classList.remove('animate-in');
+            // Force a synchronous reflow so the removal is painted before
+            // the class is re-added — without this the browser may batch
+            // the removal and addition and skip the animation.
+            void container.offsetHeight;
+            container.classList.add('animate-in');
+        }
+
+        // Fire on the initial page load, after the first paint.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                requestAnimationFrame(function() {
+                    playEntryAnimation();
+                });
+            });
+        } else {
+            // DOM already loaded (e.g. bfcache restore or deferred script).
+            requestAnimationFrame(function() {
+                playEntryAnimation();
+            });
+        }
+
+        // Replay when the page is restored from the back/forward cache.
+        window.addEventListener('pageshow', function(e) {
+            if (e.persisted) {
+                playEntryAnimation();
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

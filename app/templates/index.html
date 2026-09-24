@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="card" style="text-align: center;">
+    <h1><i class="fa-solid fa-graduation-cap"></i> 欢迎来到 UltraClassManager</h1>
+    <p style="color: #888; font-size: 1.1em; margin: 16px 0;">一个强大的班级管理与随机抽取平台</p>
+    {% if current_user.is_authenticated %}
+        <a href="{{ url_for('group.dashboard') }}" class="btn btn-primary"><i class="fa-solid fa-layer-group"></i> 进入我的班级</a>
+    {% else %}
+        <div style="margin-top: 20px;">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> 登录</a>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-outline" style="margin-left: 12px;"><i class="fa-solid fa-user-plus"></i> 注册</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
