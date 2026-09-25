@@ -103,12 +103,43 @@ function copyPageLink() {
     });
 }
 
-const allNames = {{ names|tojson }};
+const allNames = [...new Set({{ names|tojson }})];
 const pickForm = document.getElementById('pick-form');
 const pickBtn = document.getElementById('pick-btn');
 const pickSlot = document.getElementById('pick-slot');
 const slotName = document.getElementById('slot-name');
 const latestResult = document.getElementById('latest-result');
+let remainingNames = [];
+
+function shuffleNames(names) {
+    const shuffled = [...names];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function drawNames(count) {
+    const pickedNames = [];
+    const pickedThisTime = new Set();
+    const deferredNames = [];
+
+    while (pickedNames.length < count) {
+        if (remainingNames.length === 0) remainingNames = shuffleNames(allNames);
+        const name = remainingNames.pop();
+        if (pickedThisTime.has(name)) {
+            deferredNames.push(name);
+            continue;
+        }
+        pickedNames.push(name);
+        pickedThisTime.add(name);
+    }
+
+    // 跨轮补抽时，本次跳过的名字留在新一轮，供后续抽取。
+    remainingNames.unshift(...deferredNames);
+    return pickedNames;
+}
 
 {% if result %}
 (function() {
@@ -134,8 +165,7 @@ if (pickForm) pickForm.addEventListener('submit', function(e) {
     pickBtn.style.cursor = 'not-allowed';
     
     const count = Math.max(1, Math.min(parseInt(document.getElementById('pick-count').value) || 1, allNames.length));
-    const shuffled = [...allNames].sort(() => Math.random() - 0.5);
-    const pickedNames = shuffled.slice(0, count);
+    const pickedNames = drawNames(count);
     
     pickSlot.style.display = '';
     latestResult.innerHTML = '';
